@@ -2,33 +2,22 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { collection, doc, getDocs } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { CheckCircle, PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { auth, db } from "../firebase/config";
-type Person = {
-  id: number;
-  fullName: string;
-  date: string;
-};
+
 interface Documents {
   NomClient: string;
   dateEtHeure: string;
 }
 type DocumentsWithId = Documents & { id: string };
-export default function page() {
-  const [people, setPeople] = useState<Person[]>([
-    { id: 1, fullName: "Alice Johnson", date: "2025-04-18" },
-    { id: 2, fullName: "Bob Smith", date: "2025-03-10" },
-    { id: 3, fullName: "Charlie Brown", date: "2025-01-22" },
-  ]);
+export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [doc, setDoc] = useState<DocumentsWithId[]>([]);
   const router = useRouter();
-  const handleDelete = (id: number) => {
-    setPeople((prev) => prev.filter((person) => person.id !== id));
-  };
+
   /* const getCustomerdata = async (email: string) => {
         const docRef = doc(db, "users", email); // replace with customerID
         const docSnap = await getDoc(docRef);
@@ -56,10 +45,7 @@ export default function page() {
       };
     */ const getCustomerdata = async () => {
     const querySnapshot = await getDocs(collection(db, "doc"));
-    const docs = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+
     const docss: DocumentsWithId[] = querySnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
@@ -133,7 +119,6 @@ export default function page() {
                   </p>
                 </div>
                 <button
-                  onClick={() => handleDelete(1)}
                   className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
                   key={i + 3}
                 >

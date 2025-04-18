@@ -17,7 +17,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [repassword, setRePassword] = useState("");
   const [isLoginLoading, setIsLoginLoading] = useState(false);
   const navigate = useRouter();
   const router = useRouter();
@@ -34,7 +33,7 @@ export default function Auth() {
     return () => unsubscribe();
   }, [user]);
 
-  const handleSignUp = async (e: any) => {
+  /*const handleSignUp = async (e: any) => {
     e.preventDefault();
     console.log({ email, password });
 
@@ -57,7 +56,7 @@ export default function Auth() {
       console.log("password must be identique!");
       //
     }
-  };
+  };*/
   const HandleSubmit = async (e: any) => {
     e.preventDefault();
     setIsLoginLoading(true);
