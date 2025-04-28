@@ -1,15 +1,17 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { onAuthStateChanged, User } from "firebase/auth";
+import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { collection, getDocs } from "firebase/firestore";
-import { CheckCircle, PlusIcon } from "lucide-react";
+import { CheckCircle, LogOut, PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { auth, db } from "../firebase/config";
-
+import Image from "next/image";
+import logo from "@/public/motif_compagny.png";
 interface Documents {
-  NomClient: string;
+  Nom: string;
+  Prenom: string;
   dateEtHeure: string;
 }
 type DocumentsWithId = Documents & { id: string };
@@ -70,14 +72,23 @@ export default function Dashboard() {
     });
     return () => unsubscribe();
   }, [user]);
+  const logOut = async () => {
+    await signOut(auth);
+    if (user == null) {
+      router.replace("/");
+    }
+  };
   return (
     <div>
       <div className="flex justify-between p-3 md:p-5 bg-slate-200 w-full fixed top-0">
-        <p className="text-center text-xl font-bold ">welcome.</p>
+        <Image src={logo} alt="logo" className="size-[60px]" />
         <div className="flex items-center gap-2">
           <p>Admin? </p> <CheckCircle />
-          <Button>
+          <Button onClick={logOut}>
             <PlusIcon /> Add user
+          </Button>
+          <Button>
+            <LogOut />
           </Button>
         </div>
       </div>
@@ -106,13 +117,12 @@ export default function Dashboard() {
                 key={i}
                 className="flex justify-between items-center p-4 border rounded shadow"
                 onClick={() => {
-                  alert(data.id);
-                  router.push("/open-doc");
+                  router.push(`/open-doc/${data.id}/`);
                 }}
               >
                 <div key={i + 1}>
                   <p className="font-semibold" key={i + 2}>
-                    {data.NomClient}
+                    <span> {data.Nom}</span> <span>{data.Prenom}</span>
                   </p>
                   <p className="text-sm text-gray-600" key={i + 4}>
                     Date: {data.dateEtHeure}

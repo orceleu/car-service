@@ -13,7 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { LoaderIcon } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
+import logo from "@/public/motif_compagny.png";
+import Image from "next/image";
 export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -81,9 +82,9 @@ export default function Auth() {
       {" "}
       <br />
       <div className="border h-[100px] mx-10 md:mx-[100px]">
-        <p className="text-xl font-semibold text-center my-auto p-10 ">
-          Car service
-        </p>
+        <div className=" flex justify-center my-auto p-10 ">
+          <Image src={logo} alt="logo" className="size-[100px]" />
+        </div>
       </div>
       <div className="flex items-center justify-center min-h-screen  p-5">
         <div className="w-full max-w-md p-6 space-y-4 bg-white shadow-md rounded-lg">
