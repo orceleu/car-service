@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDocs } from "firebase/firestore";
 import { CheckCircle, LogOut, PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -17,9 +17,24 @@ interface Documents {
 type DocumentsWithId = Documents & { id: string };
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
-  const [doc, setDoc] = useState<DocumentsWithId[]>([]);
+  const [doc1, setDoc] = useState<DocumentsWithId[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
+  const filteredData = doc1.filter((data) =>
+    data.Nom.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  const deleteDocument = async (collectionName: string, docId: string) => {
+    try {
+      const docRef = doc(db, collectionName, docId);
+      await deleteDoc(docRef);
+      alert(`Document ${docId} supprimé avec succès`);
+      setDoc((prev) => prev.filter((doc) => doc.id !== docId));
+    } catch (error) {
+      console.error("Erreur lors de la suppression du document :", error);
+      throw error;
+    }
+  };
   /* const getCustomerdata = async (email: string) => {
         const docRef = doc(db, "users", email); // replace with customerID
         const docSnap = await getDoc(docRef);
@@ -79,15 +94,15 @@ export default function Dashboard() {
     }
   };
   return (
-    <div>
+    <>
       <div className="flex justify-between p-3 md:p-5 bg-slate-200 w-full fixed top-0">
         <Image src={logo} alt="logo" className="size-[60px]" />
         <div className="flex items-center gap-2">
           <p>Admin? </p> <CheckCircle />
-          <Button onClick={logOut}>
+          <Button variant="outline">
             <PlusIcon /> Add user
           </Button>
-          <Button>
+          <Button variant="outline" onClick={logOut}>
             <LogOut />
           </Button>
         </div>
@@ -98,47 +113,60 @@ export default function Dashboard() {
       <br />
       <br />
       <br />
-      <div className="flex justify-center w-full">
+      <div className="flex justify-center w-full p-4">
         <div className="mt-10 gap-10 w-full">
           {" "}
           <Button
-            className="mx-4 my-5"
+            className=" my-5"
+            variant="outline"
             onClick={() => {
               router.push("/dashboard/create-doc");
             }}
           >
-            {" "}
+            <PlusIcon />
             create document
           </Button>
-          <Input placeholder="search by name" className="mx-4 my-5" />
-          <ul className="space-y-4 mx-4">
-            {doc.map((data, i) => (
-              <li
-                key={i}
-                className="flex justify-between items-center p-4 border rounded shadow"
-                onClick={() => {
-                  router.push(`/open-doc/${data.id}/`);
-                }}
-              >
-                <div key={i + 1}>
-                  <p className="font-semibold" key={i + 2}>
-                    <span> {data.Nom}</span> <span>{data.Prenom}</span>
-                  </p>
-                  <p className="text-sm text-gray-600" key={i + 4}>
-                    Date: {data.dateEtHeure}
-                  </p>
-                </div>
-                <button
+          <div className="flex justify-center">
+            <Input
+              className="max-w-[500px] my-[50px] "
+              placeholder="search by name or category"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <ul className="space-y-4 ">
+            {filteredData.map((data, i) => (
+              <div className="flex justify-between gap-3" key={i + 9}>
+                <div
+                  key={i}
+                  className="flex w-full items-center p-4 border rounded shadow hover:bg-gray-100"
+                  onClick={() => {
+                    router.push(`/open-doc/${data.id}/`);
+                  }}
+                >
+                  <div key={i + 1}>
+                    <p className="font-semibold" key={i + 2}>
+                      <span> {data.Nom}</span> <span>{data.Prenom}</span>
+                    </p>
+                    <p className="text-sm text-gray-600" key={i + 4}>
+                      Date: {data.dateEtHeure}
+                    </p>
+                  </div>
+                </div>{" "}
+                <Button
                   className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
                   key={i + 3}
+                  onClick={() => {
+                    deleteDocument("doc", data.id);
+                  }}
                 >
                   Supprimer
-                </button>
-              </li>
+                </Button>
+              </div>
             ))}
           </ul>
         </div>
       </div>
-    </div>
+    </>
   );
 }

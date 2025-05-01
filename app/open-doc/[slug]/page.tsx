@@ -6,6 +6,9 @@ import Image from "next/image";
 import logo from "@/public/motif_compagny.png";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/app/firebase/config";
+import { Button } from "@/components/ui/button";
+import { ArrowBigLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 //const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg...";
 interface FormData {
   id: string; // Ajouté pour stocker l'ID du document
@@ -39,6 +42,50 @@ export default function PDFGenerator({
   const [form, setForm] = useState<FormData | null>(null);
   const [loading2, setLoading2] = useState(true);
   const docKey = useRef("");
+  const router = useRouter();
+  const clientData: Record<string, string> = {
+    Nom: form?.Nom ?? "",
+    Prénom: form?.Prenom ?? "",
+    DateEtHeure: form?.dateEtHeure ?? "",
+    NIF: form?.NIF ?? "",
+    Adresse: form?.Adresse ?? "",
+    Téléphone: form?.Phone ?? "",
+    Email: form?.Email ?? "",
+  };
+  const vehiculeData: Record<string, string> = {
+    NomVéhicule: form?.nomVehicule ?? "",
+    MarqueVéhicule: form?.MarqueVehicule ?? "",
+    Moteur: form?.Moteur ?? "",
+    Série: form?.Serie ?? "",
+    Type: form?.Type ?? "",
+    Couleur: form?.Couleur ?? "",
+    Plaque: form?.Plaque ?? "",
+    Année: form?.Annee ?? "",
+    Puissance: form?.Puissance ?? "",
+    ancPolice: form?.ancPolice ?? "",
+  };
+
+  const renderTable = (title: string, data: Record<string, string>) => (
+    <div className="w-full md:w-1/2 p-2">
+      <table className="w-full border border-gray-300">
+        <thead>
+          <tr className="bg-blue-500 text-white">
+            <th className="text-left p-2" colSpan={2}>
+              {title}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {Object.entries(data).map(([key, value]) => (
+            <tr key={key} className="border-t border-gray-300">
+              <td className="p-2 font-semibold">{key}</td>
+              <td className="p-2">{value}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 
   const generatePDF = async () => {
     setLoading(true);
@@ -65,7 +112,7 @@ export default function PDFGenerator({
     doc.text("Etat des lieux du véhicule", 60, 20);
     // Titre principal
     doc.setFontSize(15);
-    doc.text("LE:28/04/2025", 150, 20);
+    doc.text(`${form?.dateEtHeure}`, 150, 20);
     // Sous-titre
     doc.setFontSize(9);
     doc.setTextColor(100);
@@ -82,14 +129,15 @@ export default function PDFGenerator({
       startY: 50,
       margin: { left: 10 },
       tableWidth: 80, // Réduit la largeur
-      head: [["", "proprietaire"]],
+      head: [["", "propriétaire"]],
       body: [
+        ["Nom", `${form?.Nom}`],
+        ["Prenom", `${form?.Prenom}`],
+        ["DateEtHEure", `${form?.dateEtHeure}`],
         ["NIF", "002-333-456-3"],
-        ["Nom", "orcel "],
-        ["Prenom", "Euler"],
-        ["Adresse", "pv"],
-        ["Phone", "47656226"],
-        ["email", "Orceleu@gmail.com"],
+        ["Adresse", `${form?.Adresse}`],
+        ["Phone", `${form?.Phone}`],
+        ["email", `${form?.Email}`],
       ],
       styles: { fontSize: 10 },
       headStyles: { fillColor: [52, 152, 219] },
@@ -101,16 +149,16 @@ export default function PDFGenerator({
       tableWidth: 80, // Réduit la largeur
       head: [["", "Véhicule"]],
       body: [
-        ["Nom", "MITSHUBISHI"],
-        ["Marque", "344"],
-        ["Moteur", "345yuy "],
-        ["Serie", "Pickup"],
-        ["Type", "2400"],
-        ["Couleur", "rouge"],
-        ["Plaque", "tp-6488"],
-        ["Annee", "2000"],
-        ["Puissance", ""],
-        ["Anc Police", "-"],
+        ["Nom", `${form?.nomVehicule}`],
+        ["Marque", `${form?.MarqueVehicule}`],
+        ["Moteur", `${form?.Moteur}`],
+        ["Serie", `${form?.Serie}`],
+        ["Type", `${form?.Type}`],
+        ["Couleur", `${form?.Couleur}`],
+        ["Plaque", `${form?.Plaque}`],
+        ["Annee", `${form?.Annee}`],
+        ["Puissance", `${form?.Puissance}`],
+        ["Anc Police", `${form?.ancPolice}`],
       ],
       styles: { fontSize: 10 },
       headStyles: { fillColor: [52, 152, 219] },
@@ -169,91 +217,61 @@ export default function PDFGenerator({
     return <div className="p-4 text-red-500">Donnees introuvable.</div>;
   }
   return (
-    <div className="p-4">
-      <div className="flex justify-between">
-        <Image src={logo} alt="logo" className="size-[50px]" />
+    <div className="p-4 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+        <Image src={logo} alt="logo" className="w-12 h-12" />
         <button
           onClick={generatePDF}
           disabled={loading}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
         >
           {loading ? "Génération..." : "Télécharger le PDF"}
         </button>
       </div>
-      <p className="text-center text-xl my-10 underline">Apercu du document</p>
-      <div className="grid bg-slate-100 h-[1000px]">
-        <div className="flex justify-center">
-          <div className="flex justify-between max-w-[700px] p-10">
-            <Image src={logo} alt="logo" className="size-[60px]" />
-            <div>
-              <p className="text-2xl font-bold text-center mb-5">
-                Etat des lieux du véhicule.
-              </p>
-              <p className="text-gray-700 text-sm text-center">
-                Ce document d'engagement est a signer obligatoirement à la prise
-                du véhicule afin de le garantir en cas de chocs ou problème
-              </p>
-            </div>
+      <Button
+        variant="outline"
+        onClick={() => {
+          router.back();
+        }}
+      >
+        <ArrowBigLeft />
+      </Button>
 
-            <p className="text-xl">
-              <span className="text-gray-700">Le:</span>28/04/2025
+      {/* Titre aperçu */}
+      <p className="text-center text-xl my-8 underline">Aperçu du document</p>
+
+      {/* Bandeau principal */}
+      <div className="w-full bg-slate-100 py-6 px-4">
+        <div className="flex flex-wrap justify-between items-center gap-6 max-w-6xl mx-auto">
+          {/* Logo */}
+          <Image src={logo} alt="logo" className="w-16 h-16 object-contain" />
+
+          {/* Texte central */}
+          <div className="flex-1 text-center">
+            <p className="text-2xl font-bold mb-2">
+              État des lieux du véhicule
+            </p>
+            <p className="text-sm text-gray-700 max-w-md mx-auto">
+              Ce document d'engagement est à signer obligatoirement à la prise
+              du véhicule afin de le garantir en cas de chocs ou problème.
             </p>
           </div>
+
+          {/* Date */}
+          <div className="text-right text-sm text-gray-800">
+            <p className="text-base font-medium">Le :</p>
+            <p className="text-base">{form.dateEtHeure}</p>
+          </div>
         </div>
-        <h2 className="text-2xl font-bold mb-4">Détails du formulaire</h2>
-        <ul className="space-y-1">
-          <li>
-            <strong>Nom:</strong> {form.Nom}
-          </li>
-          <li>
-            <strong>Prénom:</strong> {form.Prenom}
-          </li>
-          <li>
-            <strong>Date et Heure:</strong> {form.dateEtHeure}
-          </li>
-          <li>
-            <strong>NIF:</strong> {form.NIF}
-          </li>
-          <li>
-            <strong>Adresse:</strong> {form.Adresse}
-          </li>
-          <li>
-            <strong>Téléphone:</strong> {form.Phone}
-          </li>
-          <li>
-            <strong>Email:</strong> {form.Email}
-          </li>
-          <li>
-            <strong>Nom Véhicule:</strong> {form.nomVehicule}
-          </li>
-          <li>
-            <strong>Marque Véhicule:</strong> {form.MarqueVehicule}
-          </li>
-          <li>
-            <strong>Moteur:</strong> {form.Moteur}
-          </li>
-          <li>
-            <strong>Série:</strong> {form.Serie}
-          </li>
-          <li>
-            <strong>Type:</strong> {form.Type}
-          </li>
-          <li>
-            <strong>Couleur:</strong> {form.Couleur}
-          </li>
-          <li>
-            <strong>Plaque:</strong> {form.Plaque}
-          </li>
-          <li>
-            <strong>Année:</strong> {form.Annee}
-          </li>
-          <li>
-            <strong>Puissance:</strong> {form.Puissance}
-          </li>
-          <li>
-            <strong>Ancienne Police:</strong> {form.ancPolice}
-          </li>
-        </ul>
+      </div>
+
+      {/* Tables */}
+      <div className="py-8 bg-gray-50">
+        <div className="flex flex-col md:flex-row gap-6 justify-center max-w-6xl mx-auto">
+          {renderTable("Propriétaire", clientData)}
+          {renderTable("Véhicule", vehiculeData)}
+        </div>
       </div>
     </div>
   );
